@@ -19,13 +19,13 @@ def parallel_execute(urls: list[str], function):
         futures = [executor.submit(function, url) for url in urls]
 
         for future in concurrent.futures.as_completed(futures):
-            results.extend(future.result())
+            results.append(future.result())
 
     return results
 
 
 def get_json(url: str) -> Any | None:
-    time.sleep(random.random() * 1.5)
+    time.sleep(random.random() * 2.0)
 
     headers = {"User-Agent": user_agents[random.randint(0, len(user_agents) - 1)]}
 
