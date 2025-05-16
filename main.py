@@ -1,40 +1,60 @@
 import input.media
+import output.media
 import request_utils
+import tqdm
+import concurrent.futures
+import dataset_utils
+import configs
 
-import typing
+
+def fill_output(value) -> output.media.MediaOutput | None:
+    output_elem = output.media.MediaOutput()
+
+    output_elem.fill_from_inf(value)
+    ret_val = output_elem.fill_from_conf()
+
+    if ret_val is None:
+        return None
+
+    return output_elem
 
 
-def get_media_items(
-    media_input: input.media.MediaInput, browsing_level: int
-) -> list[typing.Any]:
-    urls = []
+def get_output(values: list, function) -> list[output.media.MediaOutput]:
+    results = []
 
-    for cursor in range(0, 50000, media_input.limit):
-        media_input.browsingLevel = browsing_level
-        media_input.cursor = cursor
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(values)) as executor:
+        futures = [executor.submit(function, value) for value in values]
 
-        urls.append(media_input.get_url())
+        for future in concurrent.futures.as_completed(futures):
+            res = future.result()
 
-    results = request_utils.parallel_execute(urls, request_utils.get_json)
-    post_items = []
+            if res is not None:
+                results.append(res)
 
-    for result in results:
-        if result is None:
-            continue
-
-        try:
-            items = result["result"]["data"]["json"]["items"]
-        except:
-            continue
-
-        post_items.extend(items)
-
-    return post_items
+    return results
 
 
 if __name__ == "__main__":
     media_input = input.media.MediaInput()
+    media_input.start_cursor = 1000
+    media_input.end_cursor = 2000
 
-    media_items = get_media_items(media_input, 0)
+    media_items = []
 
-    print(len(media_items))
+    media_items.extend(input.media.get_media_items(media_input, 0))
+
+    outputs: list[output.media.MediaOutput] = []
+
+    with tqdm.tqdm(total=len(media_items), desc="Filling Items") as pbar:
+        for chunk in request_utils.into_chunks(media_items, 128):
+            outputs.extend(get_output(chunk, fill_output))
+            pbar.update(len(chunk))
+
+    dataset_utils.add_save_dataset(
+        "dataset.parquet",
+        configs.dataset_columns,
+        outputs,
+        "id",
+        "dataset.parquet",
+        "dataset.csv",
+    )
