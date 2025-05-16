@@ -15,3 +15,19 @@ user_agents = [
 ]
 
 datasets_folder = "datasets"
+
+dataset_columns = [
+    "id",
+    "url",
+    "media_type",
+    "process",
+    "prompt",
+    "negativePrompt",
+    "cfgScale",
+    "steps",
+    "sampler",
+    "seed",
+    "model",
+    "clipSkip",
+    "resources",
+]
