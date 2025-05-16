@@ -1,5 +1,7 @@
 import enum
 import json
+import request_utils
+import typing
 
 
 class Reactions(enum.Enum):
@@ -101,6 +103,8 @@ class MediaInput:
     cursor: int
     reactions: list[str]
     limit: int
+    start_cursor: int
+    end_cursor: int
 
     def __init__(self) -> None:
         self.baseModels = []
@@ -119,6 +123,8 @@ class MediaInput:
             Reactions.Heart.value,
         ]
         self.limit = 200
+        self.start_cursor = 0
+        self.end_cursor = 50_000
 
     def to_string(self) -> str:
         input_types = {
@@ -143,3 +149,32 @@ class MediaInput:
         params = self.to_string()
 
         return f"{base_url}?input=" + params
+
+
+def get_media_items(media_input: MediaInput, browsing_level: int) -> list[typing.Any]:
+    urls = []
+
+    for cursor in range(
+        media_input.start_cursor, media_input.end_cursor, media_input.limit
+    ):
+        media_input.browsingLevel = browsing_level
+        media_input.cursor = cursor
+
+        urls.append(media_input.get_url())
+
+    results = request_utils.parallel_execute(urls, request_utils.get_json)
+
+    post_items = []
+
+    for result in results:
+        if result is None:
+            continue
+
+        try:
+            items = result["result"]["data"]["json"]["items"]
+        except:
+            continue
+
+        post_items.extend(items)
+
+    return post_items
