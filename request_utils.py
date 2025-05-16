@@ -12,7 +12,7 @@ def into_chunks(arr, chunk_size):
         yield arr[i : i + chunk_size]
 
 
-def parallel_execute(urls: list[str], function):
+def parallel_execute(urls: list[str], function) -> list:
     results = []
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(urls)) as executor:
@@ -24,25 +24,12 @@ def parallel_execute(urls: list[str], function):
     return results
 
 
-def get_json(url: str) -> Any | None:
-    time.sleep(random.random() * 2.0)
+def get_json(url: str, delay_time: float = 2.0) -> Any | None:
+    time.sleep(random.random() * delay_time)
 
     headers = {"User-Agent": user_agents[random.randint(0, len(user_agents) - 1)]}
 
     response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        for _ in range(3):
-            time.sleep(random.random() * 2.0)
-
-            headers = {
-                "User-Agent": user_agents[random.randint(0, len(user_agents) - 1)]
-            }
-
-            response = requests.get(url, headers=headers)
-
-            if response.status_code == 200:
-                break
 
     if response.status_code != 200:
         return None
