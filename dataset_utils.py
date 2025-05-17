@@ -29,6 +29,9 @@ def add_postprocss_dataframe(
 ) -> pl.DataFrame:
     created_df = create_dataframe_from_list(infos=values, columns=columns)
 
+    if len(created_df) == 0:
+        return df
+
     new_df = pl.concat([df, created_df], how="vertical")
     new_df = new_df.unique([unique_column], keep="last")
     new_df = new_df.shrink_to_fit()
@@ -36,9 +39,8 @@ def add_postprocss_dataframe(
     return new_df
 
 
-def print_save_dataframe(df: pl.DataFrame, parquet_filename: str, csv_filename: str):
+def print_save_dataframe(df: pl.DataFrame, parquet_filename: str):
     df.write_parquet(parquet_filename)
-    df.write_csv(csv_filename)
 
     print(f"Total rows of dataframe: {len(df)}")
     print(df.head(5))
@@ -53,10 +55,9 @@ def add_save_dataset(
     values: list,
     unique_key: str,
     parquet_filename: str,
-    csv_filename: str,
 ):
     with dataset_lock:
         df = get_dataframe(dataset_path, columns)
         df = add_postprocss_dataframe(df, values, unique_key, columns)
 
-        print_save_dataframe(df, parquet_filename, csv_filename)
+        print_save_dataframe(df, parquet_filename)
