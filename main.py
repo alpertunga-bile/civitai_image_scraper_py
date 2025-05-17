@@ -1,60 +1,51 @@
-import input.media
-import output.media
-import request_utils
-import tqdm
-import concurrent.futures
 import dataset_utils
 import configs
+import tqdm
+import json
+from logger import logger as log
+from logger import set_logger
+import os.path
+import os
+
+from input import MediaInput, get_media_items
+from output import get_outputs
 
 
-def fill_output(value) -> output.media.MediaOutput | None:
-    output_elem = output.media.MediaOutput()
+def start_enhance(input: MediaInput) -> None:
+    outputs = set()
 
-    output_elem.fill_from_inf(value)
-    ret_val = output_elem.fill_from_conf()
+    for level in tqdm.tqdm(
+        range(configs.browsing_level_start, configs.browsing_level_end),
+        desc="Browsing Level",
+        position=1,
+        leave=False,
+    ):
+        media_items = get_media_items(input, level)
+        outputs.update(get_outputs(media_items))
 
-    if ret_val is None:
-        return None
+    print("\n" * 2)
 
-    return output_elem
-
-
-def get_output(values: list, function) -> list[output.media.MediaOutput]:
-    results = []
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=len(values)) as executor:
-        futures = [executor.submit(function, value) for value in values]
-
-        for future in concurrent.futures.as_completed(futures):
-            res = future.result()
-
-            if res is not None:
-                results.append(res)
-
-    return results
+    dataset_utils.add_save_dataset(
+        os.path.join(configs.datasets_folder, configs.datasets_filename),
+        configs.dataset_columns,
+        [*outputs],
+        "id",
+        os.path.join(configs.datasets_folder, configs.datasets_filename),
+    )
 
 
 if __name__ == "__main__":
-    media_input = input.media.MediaInput()
-    media_input.start_cursor = 1000
-    media_input.end_cursor = 2000
+    set_logger()
+    media_input = MediaInput()
 
-    media_items = []
+    with open("config.json", "r") as file:
+        config_inputs = json.loads(file.read())
 
-    media_items.extend(input.media.get_media_items(media_input, 0))
+    log.info("config.json is read")
 
-    outputs: list[output.media.MediaOutput] = []
+    configs.set_dataset_conf_from_json(config_inputs["dataset"])
+    media_input.set_from_json(config_inputs["input"])
 
-    with tqdm.tqdm(total=len(media_items), desc="Filling Items") as pbar:
-        for chunk in request_utils.into_chunks(media_items, 128):
-            outputs.extend(get_output(chunk, fill_output))
-            pbar.update(len(chunk))
+    os.makedirs(configs.datasets_folder, exist_ok=True)
 
-    dataset_utils.add_save_dataset(
-        "dataset.parquet",
-        configs.dataset_columns,
-        outputs,
-        "id",
-        "dataset.parquet",
-        "dataset.csv",
-    )
+    start_enhance(media_input)
