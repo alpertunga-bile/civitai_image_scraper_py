@@ -15,6 +15,7 @@ user_agents = [
 ]
 
 datasets_folder = "datasets"
+datasets_filename = "dataset.parquet"
 
 dataset_columns = [
     "id",
@@ -30,4 +31,39 @@ dataset_columns = [
     "model",
     "clipSkip",
     "resources",
+    "likeCountAllTime",
+    "laughtCountAllTime",
+    "heartCountAllTime",
+    "cryCountAllTime",
+    "commentCountAllTime",
 ]
+
+browsing_level_start = 0
+browsing_level_end = 1
+
+
+def set_dataset_conf_from_json(value) -> None:
+    global datasets_folder
+    global datasets_filename
+    global dataset_columns
+    global browsing_level_start
+    global browsing_level_end
+
+    if value is None:
+        return
+
+    if "dataset_columns" in value:
+        dataset_columns = value["dataset_columns"]
+
+    if "dataset_filename" in value:
+        datasets_filename = value["dataset_filename"]
+
+    if "dataset_folder" in value:
+        datasets_folder = value["dataset_folder"]
+
+    browsing_level_ranges = []
+
+    if "browsingLevelRange" in value:
+        browsing_level_ranges = value["browsingLevelRange"]
+
+    browsing_level_start, browsing_level_end = browsing_level_ranges
