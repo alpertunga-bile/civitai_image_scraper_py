@@ -2,6 +2,7 @@ import enum
 import json
 import request_utils
 import typing
+import tqdm
 
 
 class Reactions(enum.Enum):
@@ -126,7 +127,7 @@ class MediaInput:
         self.start_cursor = 0
         self.end_cursor = 50_000
 
-    def to_string(self) -> str:
+    def _to_string(self) -> str:
         input_types = {
             "baseModels": self.baseModels,
             "period": self.period,
@@ -146,9 +147,26 @@ class MediaInput:
 
     def get_url(self) -> str:
         base_url = "https://civitai.com/api/trpc/image.getInfinite"
-        params = self.to_string()
+        params = self._to_string()
 
         return f"{base_url}?input=" + params
+
+    def _set_if_exists(self, value: typing.Any, param: str) -> None:
+        if param in value:
+            self.__setattr__(param, value[param])
+
+    def set_from_json(self, value: typing.Any) -> None:
+        if value is None:
+            return
+
+        self._set_if_exists(value, "baseModels")
+        self._set_if_exists(value, "period")
+        self._set_if_exists(value, "sort")
+        self._set_if_exists(value, "types")
+        self._set_if_exists(value, "browsingLevel")
+        self._set_if_exists(value, "limit")
+        self._set_if_exists(value, "start_cursor")
+        self._set_if_exists(value, "end_cursor")
 
 
 def get_media_items(media_input: MediaInput, browsing_level: int) -> list[typing.Any]:
@@ -162,7 +180,16 @@ def get_media_items(media_input: MediaInput, browsing_level: int) -> list[typing
 
         urls.append(media_input.get_url())
 
-    results = request_utils.parallel_execute(urls, request_utils.get_json)
+    results = []
+
+    with tqdm.tqdm(
+        total=len(urls), desc="Getting Images", position=2, leave=False
+    ) as pbar:
+        for chunk in request_utils.into_chunks(urls, 128):
+            results.extend(
+                request_utils.parallel_execute(chunk, request_utils.get_json)
+            )
+            pbar.update(len(chunk))
 
     post_items = []
 
