@@ -1,0 +1,35 @@
+{
+    "dataset": {
+        "dataset_columns": [
+            "id",
+            "url",
+            "media_type",
+            "process",
+            "prompt",
+            "negativePrompt",
+            "cfgScale",
+            "steps",
+            "sampler",
+            "seed",
+            "model",
+            "clipSkip",
+            "resources",
+            "likeCountAllTime",
+            "laughCountAllTime",
+            "heartCountAllTime",
+            "cryCountAllTime",
+            "commentCountAllTime"
+        ],
+        "dataset_filename": "dataset.parquet",
+        "dataset_folder": "datasets",
+        "browsingLevelRange": [0, 1]
+    },
+    "input": {
+        "baseModels": ["SD 1.5"],
+        "period": "AllTime",
+        "sort": "Most Reactions",
+        "types": ["image", "video"],
+        "limit": 200,
+        "cursorRange": [0, 1000]
+    }
+}
