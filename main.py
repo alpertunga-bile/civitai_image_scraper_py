@@ -6,6 +6,7 @@ from logger import logger as log
 from logger import set_logger
 import os.path
 import os
+import argparse
 
 from input import MediaInput, get_media_items
 from output import get_outputs
@@ -33,13 +34,27 @@ def start_enhance(input: MediaInput) -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="civitai image scraper",
+        usage="python main.py",
+        description="Scrape CivitAI image and video generation informations",
+    )
+    parser.add_argument("-c", "--config", action="store", default="config.json")
+    args = parser.parse_args()
+
+    config_file = args.config
+
     set_logger()
     media_input = MediaInput()
 
-    with open("config.json", "r") as file:
-        config_inputs = json.loads(file.read())
+    try:
+        with open(config_file, "r") as file:
+            config_inputs = json.loads(file.read())
 
-    log.info("config.json is read")
+        log.info(f"{config_file} is read")
+    except Exception as e:
+        log.error(f"{config_file} can not read: {e}")
+        exit(1)
 
     configs.set_dataset_conf_from_json(config_inputs["dataset"])
     media_input.set_from_json(config_inputs["input"])
