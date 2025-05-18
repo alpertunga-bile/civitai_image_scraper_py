@@ -23,14 +23,12 @@ def start_enhance(input: MediaInput) -> None:
         media_items = get_media_items(input, level)
         outputs.update(get_outputs(media_items))
 
-    print("\n" * 2)
-
     dataset_utils.add_save_dataset(
-        os.path.join(configs.datasets_folder, configs.datasets_filename),
+        os.path.join(configs.dataset_folder, configs.dataset_filename),
         configs.dataset_columns,
         [*outputs],
         "id",
-        os.path.join(configs.datasets_folder, configs.datasets_filename),
+        os.path.join(configs.dataset_folder, configs.dataset_filename),
     )
 
 
@@ -46,6 +44,6 @@ if __name__ == "__main__":
     configs.set_dataset_conf_from_json(config_inputs["dataset"])
     media_input.set_from_json(config_inputs["input"])
 
-    os.makedirs(configs.datasets_folder, exist_ok=True)
+    os.makedirs(configs.dataset_folder, exist_ok=True)
 
     start_enhance(media_input)
