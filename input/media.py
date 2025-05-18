@@ -165,8 +165,14 @@ class MediaInput:
         self._set_if_exists(value, "types")
         self._set_if_exists(value, "browsingLevel")
         self._set_if_exists(value, "limit")
-        self._set_if_exists(value, "start_cursor")
-        self._set_if_exists(value, "end_cursor")
+
+        cursorRange = None
+
+        if "cursorRange" in value:
+            cursorRange = value["cursorRange"]
+
+        if cursorRange is not None:
+            self.start_cursor, self.end_cursor = cursorRange
 
 
 def get_media_items(media_input: MediaInput, browsing_level: int) -> list[typing.Any]:
