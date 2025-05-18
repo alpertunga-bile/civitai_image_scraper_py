@@ -2,11 +2,12 @@ import dataset_utils
 import configs
 import tqdm
 import json
-from logger import logger as log
-from logger import set_logger
 import os.path
 import os
 import argparse
+
+from logger import logger as log
+from logger import set_logger
 
 from input import MediaInput, get_media_items
 from output import get_outputs
