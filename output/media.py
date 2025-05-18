@@ -19,7 +19,7 @@ class MediaOutput:
     prompt: str
     negativePrompt: str
     cfgScale: float
-    steps: float
+    steps: int
     sampler: str
     seed: int
     model: str
@@ -39,7 +39,7 @@ class MediaOutput:
         self.prompt = ""
         self.negativePrompt = ""
         self.cfgScale = 0.0
-        self.steps = 0.0
+        self.steps = 0
         self.sampler = ""
         self.seed = 0
         self.model = ""
@@ -126,6 +126,6 @@ class MediaOutput:
         self._set_if_exists(meta, "cfgScale")
         self._set_if_exists(meta, "clipSkip")
 
-        self.steps = float(self.steps)
+        self.cfgScale = float(self.cfgScale)
 
         return True
