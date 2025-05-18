@@ -42,7 +42,7 @@ def add_postprocss_dataframe(
 def print_save_dataframe(df: pl.DataFrame, parquet_filename: str):
     df.write_parquet(parquet_filename)
 
-    print(f"Total rows of dataframe: {len(df)}")
+    print(f"\nTotal rows of dataframe: {len(df)}")
     print(df.head(5))
 
 
