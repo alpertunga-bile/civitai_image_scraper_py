@@ -21,8 +21,7 @@
             "commentCountAllTime"
         ],
         "dataset_filename": "dataset.parquet",
-        "dataset_folder": "datasets",
-        "browsingLevelRange": [0, 1]
+        "dataset_folder": "datasets"
     },
     "input": {
         "baseModels": ["SD 1.5"],
@@ -30,6 +29,6 @@
         "sort": "Most Reactions",
         "types": ["image", "video"],
         "limit": 200,
-        "cursorRange": [0, 1000]
+        "total_image_count": 1000
     }
 }
