@@ -73,9 +73,15 @@ class MediaOutput:
     def _fill_from_inf(self, value: typing.Any) -> None:
         base_image_url = "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA"
 
-        self.id = value["id"]
-        self.media_type = value["type"]
-        self.model = value["baseModel"]
+        if "id" in value:
+            self.id = value["id"]
+
+        if "type" in value:
+            self.media_type = value["type"]
+
+        if "baseModel" in value:
+            self.model = value["baseModel"]
+
         piece_url = value["url"]
 
         stats = value["stats"]
