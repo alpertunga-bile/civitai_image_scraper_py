@@ -37,8 +37,7 @@ columns.
             "commentCountAllTime"
         ],
         "dataset_filename": "dataset.parquet",
-        "dataset_folder": "datasets",
-        "browsingLevelRange": [0, 1]
+        "dataset_folder": "datasets"
     },
     "input": {
         "baseModels": ["SD 1.5"],
@@ -46,7 +45,7 @@ columns.
         "sort": "Most Reactions",
         "types": ["image", "video"],
         "limit": 200,
-        "cursorRange": [0, 1000]
+        "total_image_count": 1000
     }
 }
 ```
@@ -55,12 +54,11 @@ columns.
 
 ### Dataset
 
-|        Name        |      Type      | Definition                                                                                                                                     |
-| :----------------: | :------------: | :--------------------------------------------------------------------------------------------------------------------------------------------- |
-|  dataset_columns   |   list[str]    | Selecting which dataset columns to be included. See [this section](#dataset-columns).                                                          |
-|  dataset_filename  |      str       | Dataset filename to be read from or created                                                                                                    |
-|   dataset_folder   |      str       | Dataset folder to search the dataset or create the dataset into                                                                                |
-| browsingLevelRange | list[int, int] | Left integer is the starting browsing level and right integer is the ending browsing level. The left has to be smaller than the right integer. |
+|       Name       |   Type    | Definition                                                                            |
+| :--------------: | :-------: | :------------------------------------------------------------------------------------ |
+| dataset_columns  | list[str] | Selecting which dataset columns to be included. See [this section](#dataset-columns). |
+| dataset_filename |    str    | Dataset filename to be read from or created                                           |
+|  dataset_folder  |    str    | Dataset folder to search the dataset or create the dataset into                       |
 
 #### Dataset Columns
 
@@ -92,14 +90,14 @@ columns.
 
 ### Input
 
-|    Name     |    Type    | Definition                                                                   |
-| :---------: | :--------: | :--------------------------------------------------------------------------- |
-| baseModels  | list[str]  | List of images and video models to filter. See [this section](#base-models). |
-|   period    |    str     | Period option selection. See [this section](#period).                        |
-|    sort     |    str     | Sort option selection. See [this section](#sort).                            |
-|    types    | list[str]  | Image, video post item option selection. See [this section](#media-type).    |
-|    limit    |  [0, 200]  | The limit in one page                                                        |
-| cursorRange | [0, 50000) | The cursor in the image page                                                 |
+|       Name        |   Type    | Definition                                                                   |
+| :---------------: | :-------: | :--------------------------------------------------------------------------- |
+|    baseModels     | list[str] | List of images and video models to filter. See [this section](#base-models). |
+|      period       |    str    | Period option selection. See [this section](#period).                        |
+|       sort        |    str    | Sort option selection. See [this section](#sort).                            |
+|       types       | list[str] | Image, video post item option selection. See [this section](#media-type).    |
+|       limit       | [0, 200]  | The limit in one page                                                        |
+| total_image_count |           | Total image count wanted to be fetched                                       |
 
 #### Base Models
 
