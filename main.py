@@ -1,6 +1,5 @@
 import dataset_utils
 import configs
-import tqdm
 import json
 import os.path
 import os
@@ -16,14 +15,8 @@ from output import get_outputs
 def start_enhance(input: MediaInput) -> None:
     outputs = set()
 
-    for level in tqdm.tqdm(
-        range(configs.browsing_level_start, configs.browsing_level_end),
-        desc="Browsing Level",
-        position=1,
-        leave=False,
-    ):
-        media_items = get_media_items(input, level)
-        outputs.update(get_outputs(media_items))
+    media_items = get_media_items(input)
+    outputs.update(get_outputs(media_items))
 
     dataset_utils.add_save_dataset(
         os.path.join(configs.dataset_folder, configs.dataset_filename),
