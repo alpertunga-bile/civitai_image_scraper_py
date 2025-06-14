@@ -98,22 +98,17 @@ class MediaInput:
     period: str
     sort: str
     types: list[str]
-    useIndex: bool
-    browsingLevel: int
     include: list[str]
     cursor: int
     reactions: list[str]
     limit: int
-    start_cursor: int
-    end_cursor: int
+    total_image_count: int
 
     def __init__(self) -> None:
         self.baseModels = []
         self.period = Period.AllTime.value
         self.sort = Sort.MostReactions.value
         self.types = [MediaType.Image.value, MediaType.Video.value]
-        self.useIndex = True
-        self.browsingLevel = 1
         self.include = [Includes.Tags.value]
         self.cursor = 0
         self.reactions = [
@@ -124,8 +119,7 @@ class MediaInput:
             Reactions.Heart.value,
         ]
         self.limit = 200
-        self.start_cursor = 0
-        self.end_cursor = 50_000
+        self.total_image_count = 1000
 
     def _to_string(self) -> str:
         input_types = {
@@ -133,8 +127,6 @@ class MediaInput:
             "period": self.period,
             "sort": self.sort,
             "types": self.types,
-            "useIndex": self.useIndex,
-            "browsingLevel": self.browsingLevel,
             "include": self.include,
             "cursor": self.cursor,
             "reactions": self.reactions,
@@ -163,51 +155,47 @@ class MediaInput:
         self._set_if_exists(value, "period")
         self._set_if_exists(value, "sort")
         self._set_if_exists(value, "types")
-        self._set_if_exists(value, "browsingLevel")
         self._set_if_exists(value, "limit")
-
-        cursorRange = None
-
-        if "cursorRange" in value:
-            cursorRange = value["cursorRange"]
-
-        if cursorRange is not None:
-            self.start_cursor, self.end_cursor = cursorRange
+        self._set_if_exists(value, "total_image_count")
 
 
-def get_media_items(media_input: MediaInput, browsing_level: int) -> list[typing.Any]:
-    urls = []
-
-    for cursor in range(
-        media_input.start_cursor, media_input.end_cursor, media_input.limit
-    ):
-        media_input.browsingLevel = browsing_level
-        media_input.cursor = cursor
-
-        urls.append(media_input.get_url())
-
+def get_media_items(media_input: MediaInput) -> list[typing.Any]:
     results = []
 
-    with tqdm.tqdm(
-        total=len(urls), desc="Getting Images", position=2, leave=False
-    ) as pbar:
-        for chunk in request_utils.into_chunks(urls, 128):
-            results.extend(
-                request_utils.parallel_execute(chunk, request_utils.get_json)
-            )
-            pbar.update(len(chunk))
+    img_cnt = 0
+    loop_cnt = 0
 
-    post_items = []
+    with tqdm.tqdm(total=media_input.total_image_count, desc="Getting Items") as pbar:
+        while img_cnt < media_input.total_image_count and loop_cnt < 3:
+            result = request_utils.get_json(media_input.get_url())
 
-    for result in results:
-        if result is None:
-            continue
+            if result is None:
+                loop_cnt = loop_cnt + 1
+                continue
 
-        try:
-            items = result["result"]["data"]["json"]["items"]
-        except:
-            continue
+            try:
+                json_result = result["result"]["data"]["json"]
+            except:
+                loop_cnt = loop_cnt + 1
+                continue
 
-        post_items.extend(items)
+            try:
+                next_cursor = json_result["nextCursor"]
+            except:
+                loop_cnt = loop_cnt + 1
+                continue
 
-    return post_items
+            media_input.cursor = next_cursor
+
+            try:
+                items = json_result["items"]
+            except:
+                continue
+
+            results.extend(items)
+
+            loop_cnt = 0
+            img_cnt = img_cnt + len(items)
+            pbar.update(len(items))
+
+    return results
